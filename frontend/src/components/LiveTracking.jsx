@@ -337,6 +337,11 @@ const LiveTracking = (props) => {
 
             mapInstanceRef.current = map;
             markerInstanceRef.current = marker;
+
+            // Force invalidateSize to fix gray screen on initial render
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 300);
         }
 
         return () => {
@@ -352,14 +357,30 @@ const LiveTracking = (props) => {
         };
     }, []);
 
+    // Reset fit bounds flag when a real GPS location is obtained for the first time
+    const [ isRealPosResolved, setIsRealPosResolved ] = useState(false);
+    useEffect(() => {
+        if (!isRealPosResolved && (currentPosition.lat !== center.lat || currentPosition.lng !== center.lng)) {
+            setIsRealPosResolved(true);
+            hasFitBoundsRef.current = false;
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.invalidateSize();
+            }
+        }
+    }, [currentPosition, isRealPosResolved]);
+
     // Reset fit bounds flag when route or coordinates change
     useEffect(() => {
         hasFitBoundsRef.current = false;
+        if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+        }
     }, [pickupCoords, destinationCoords, routeCoords.length]);
 
     // Manual Re-center handler
     const handleRecenter = () => {
         if (!mapInstanceRef.current) return;
+        mapInstanceRef.current.invalidateSize();
         const allCoords = [];
         if (routeCoords.length > 0) {
             allCoords.push(...routeCoords);
