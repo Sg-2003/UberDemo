@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: uber-demo-backend
+    env: node
+    plan: free
+    rootDir: Backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: JWT_SECRET
+        value: uber-production-secret-key-9999
+      - key: DB_CONNECT
+        sync: false # You will paste your MongoDB Atlas Connection URI here
+      - key: GOOGLE_MAPS_API
+        value: dummy-google-maps-api-key
