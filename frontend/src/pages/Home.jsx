@@ -13,6 +13,7 @@ import { useContext } from 'react';
 import { UserDataContext } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import LiveTracking from '../components/LiveTracking';
+import { useToast } from '../context/ToastContext';
 
 const Home = () => {
     const [ pickup, setPickup ] = useState('')
@@ -39,24 +40,46 @@ const Home = () => {
 
     const { socket } = useContext(SocketContext)
     const { user } = useContext(UserDataContext)
+    const { addToast } = useToast()
 
     useEffect(() => {
+        if (!user || !user._id) return;
+
         socket.emit("join", { userType: "user", userId: user._id })
-    }, [ user ])
 
-    socket.on('ride-confirmed', ride => {
+        const handleRideConfirmed = (ride) => {
+            setVehicleFound(false)
+            setWaitingForDriver(true)
+            setRide(ride)
+            addToast(
+                `Driver found! OTP: ${ride.otp}`,
+                'otp',
+                7000,
+                `${ride.captain?.fullname?.firstname} is heading to your pickup`
+            )
+            // Browser notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Driver Confirmed! 🚗', {
+                    body: `Your OTP is ${ride.otp} — share with driver`,
+                    icon: 'https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png'
+                })
+            }
+        }
 
+        const handleRideStarted = (ride) => {
+            addToast('Ride started! Enjoy your trip 🎉', 'ride', 4000, 'Your path is being tracked')
+            setWaitingForDriver(false)
+            navigate('/riding', { state: { ride } })
+        }
 
-        setVehicleFound(false)
-        setWaitingForDriver(true)
-        setRide(ride)
-    })
+        socket.on('ride-confirmed', handleRideConfirmed)
+        socket.on('ride-started', handleRideStarted)
 
-    socket.on('ride-started', ride => {
-        console.log("ride")
-        setWaitingForDriver(false)
-        navigate('/riding', { state: { ride } }) // Updated navigate to include ride data
-    })
+        return () => {
+            socket.off('ride-confirmed', handleRideConfirmed)
+            socket.off('ride-started', handleRideStarted)
+        }
+    }, [user])
 
 
     const handlePickupChange = async (e) => {
@@ -184,6 +207,7 @@ const Home = () => {
     }
 
     async function createRide() {
+        addToast('Looking for nearby drivers...', 'info', 5000, 'This may take a moment')
         const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/rides/create`, {
             pickup,
             destination,
@@ -193,8 +217,6 @@ const Home = () => {
                 Authorization: `Bearer ${localStorage.getItem('token')}`
             }
         })
-
-
     }
 
     return (
@@ -202,7 +224,7 @@ const Home = () => {
             <img className='w-16 absolute left-5 top-5' src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="" />
             <div className='h-screen w-screen'>
                 {/* image for temporary use  */}
-                <LiveTracking />
+                <LiveTracking ride={ride} pickup={pickup} destination={destination} vehicleType={vehicleType} />
             </div>
             <div className=' flex flex-col justify-end h-screen absolute top-0 w-full'>
                 <div className='h-[30%] p-6 bg-white relative'>
@@ -279,7 +301,7 @@ const Home = () => {
                     vehicleType={vehicleType}
                     setVehicleFound={setVehicleFound} />
             </div>
-            <div ref={waitingForDriverRef} className='fixed w-full  z-10 bottom-0  bg-white px-3 py-6 pt-12'>
+            <div ref={waitingForDriverRef} className='fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-6 pt-12'>
                 <WaitingForDriver
                     ride={ride}
                     setVehicleFound={setVehicleFound}

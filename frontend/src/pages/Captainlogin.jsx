@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { CaptainDataContext } from '../context/CapatainContext'
 
+import { useToast } from '../context/ToastContext'
+
 const Captainlogin = () => {
 
   const [ email, setEmail ] = useState('')
@@ -11,25 +13,28 @@ const Captainlogin = () => {
 
   const { captain, setCaptain } = React.useContext(CaptainDataContext)
   const navigate = useNavigate()
-
-
+  const { addToast } = useToast()
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    const captain = {
+    const captainData = {
       email: email,
       password
     }
 
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`, captain)
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`, captainData)
 
-    if (response.status === 200) {
-      const data = response.data
+      if (response.status === 200) {
+        const data = response.data
 
-      setCaptain(data.captain)
-      localStorage.setItem('token', data.token)
-      navigate('/captain-home')
-
+        setCaptain(data.captain)
+        localStorage.setItem('captain-token', data.token)
+        addToast(`Welcome online, Captain ${data.captain.fullname.firstname}! 🚗`, 'success')
+        navigate('/captain-home')
+      }
+    } catch (err) {
+      addToast(err.response?.data?.message || 'Invalid email or password', 'error')
     }
 
     setEmail('')

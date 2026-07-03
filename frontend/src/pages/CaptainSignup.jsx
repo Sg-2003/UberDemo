@@ -4,6 +4,8 @@ import { CaptainDataContext } from '../context/CapatainContext'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
+import { useToast } from '../context/ToastContext'
+
 const CaptainSignup = () => {
 
   const navigate = useNavigate()
@@ -20,7 +22,7 @@ const CaptainSignup = () => {
 
 
   const { captain, setCaptain } = React.useContext(CaptainDataContext)
-
+  const { addToast } = useToast()
 
   const submitHandler = async (e) => {
     e.preventDefault()
@@ -39,13 +41,18 @@ const CaptainSignup = () => {
       }
     }
 
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/register`, captainData)
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/register`, captainData)
 
-    if (response.status === 201) {
-      const data = response.data
-      setCaptain(data.captain)
-      localStorage.setItem('token', data.token)
-      navigate('/captain-home')
+      if (response.status === 201) {
+        const data = response.data
+        setCaptain(data.captain)
+        localStorage.setItem('captain-token', data.token)
+        addToast(`Captain account registered! Welcome online, Captain ${data.captain.fullname.firstname}! 🚀`, 'success')
+        navigate('/captain-home')
+      }
+    } catch (err) {
+      addToast(err.response?.data?.errors?.[0]?.msg || err.response?.data?.message || 'Registration failed', 'error')
     }
 
     setEmail('')

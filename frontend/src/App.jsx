@@ -14,16 +14,22 @@ import CaptainLogout from './pages/CaptainLogout'
 import Riding from './pages/Riding'
 import CaptainRiding from './pages/CaptainRiding'
 import 'remixicon/fonts/remixicon.css'
+import { ToastProvider } from './context/ToastContext'
 
 const App = () => {
 
   return (
-    <div>
+    <ToastProvider>
+      <div>
       <Routes>
         <Route path='/' element={<Start />} />
         <Route path='/login' element={<UserLogin />} />
         <Route path='/riding' element={<Riding />} />
-        <Route path='/captain-riding' element={<CaptainRiding />} />
+        <Route path='/captain-riding' element={
+          <CaptainProtectWrapper>
+            <CaptainRiding />
+          </CaptainProtectWrapper>
+        } />
 
         <Route path='/signup' element={<UserSignup />} />
         <Route path='/captain-login' element={<Captainlogin />} />
@@ -51,7 +57,8 @@ const App = () => {
           </CaptainProtectWrapper>
         } />
       </Routes>
-    </div>
+      </div>
+    </ToastProvider>
   )
 }
 

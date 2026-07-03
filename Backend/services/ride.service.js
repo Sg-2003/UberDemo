@@ -62,15 +62,17 @@ module.exports.createRide = async ({
     }
 
     const fare = await getFare(pickup, destination);
-
-
+    const distanceTime = await mapService.getDistanceTime(pickup, destination);
 
     const ride = rideModel.create({
         user,
         pickup,
         destination,
         otp: getOtp(6),
-        fare: fare[ vehicleType ]
+        fare: fare[ vehicleType ],
+        vehicleType,
+        distance: distanceTime.distance.value,
+        duration: distanceTime.duration.value
     })
 
     return ride;
@@ -129,7 +131,8 @@ module.exports.startRide = async ({ rideId, otp, captain }) => {
         status: 'ongoing'
     })
 
-    return ride;
+    const updatedRide = await rideModel.findOne({ _id: rideId }).populate('user').populate('captain').select('+otp');
+    return updatedRide;
 }
 
 module.exports.endRide = async ({ rideId, captain }) => {
@@ -158,4 +161,31 @@ module.exports.endRide = async ({ rideId, captain }) => {
 
     return ride;
 }
+
+module.exports.payRide = async ({ rideId, user }) => {
+    if (!rideId) {
+        throw new Error('Ride id is required');
+    }
+
+    const crypto = require('crypto');
+    const paymentId = 'pay_' + crypto.randomBytes(8).toString('hex');
+    const orderId = 'order_' + crypto.randomBytes(8).toString('hex');
+    const signature = crypto.randomBytes(16).toString('hex');
+
+    const ride = await rideModel.findOneAndUpdate({
+        _id: rideId,
+        user: user._id
+    }, {
+        paymentID: paymentId,
+        orderId: orderId,
+        signature: signature
+    }, { new: true }).populate('user').populate('captain');
+
+    if (!ride) {
+        throw new Error('Ride not found');
+    }
+
+    return ride;
+}
+
 

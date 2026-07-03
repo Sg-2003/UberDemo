@@ -39,6 +39,12 @@ router.post('/end-ride',
     rideController.endRide
 )
 
+router.post('/pay',
+    authMiddleware.authUser,
+    body('rideId').isMongoId().withMessage('Invalid ride id'),
+    rideController.payRide
+)
 
 
-module.exports = router;
+
+module.exports = router;

@@ -9,6 +9,8 @@ import { useEffect, useContext } from 'react'
 import { SocketContext } from '../context/SocketContext'
 import { CaptainDataContext } from '../context/CapatainContext'
 import axios from 'axios'
+import LiveTracking from '../components/LiveTracking'
+import { useToast } from '../context/ToastContext'
 
 const CaptainHome = () => {
 
@@ -21,16 +23,29 @@ const CaptainHome = () => {
 
     const { socket } = useContext(SocketContext)
     const { captain } = useContext(CaptainDataContext)
+    const { addToast } = useToast()
+
+    // Request browser notification permission on mount
+    useEffect(() => {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission()
+        }
+    }, [])
 
     useEffect(() => {
+        if (!captain || !captain._id) return;
+
         socket.emit('join', {
             userId: captain._id,
             userType: 'captain'
         })
+
+        let locationInterval;
+        let simulationInterval;
+
         const updateLocation = () => {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(position => {
-
                     socket.emit('update-location-captain', {
                         userId: captain._id,
                         location: {
@@ -38,22 +53,83 @@ const CaptainHome = () => {
                             lng: position.coords.longitude
                         }
                     })
+                }, () => {
+                    // Fallback to default location (Mumbai center) if geolocation fails or is blocked
+                    socket.emit('update-location-captain', {
+                        userId: captain._id,
+                        location: { ltd: 19.0760, lng: 72.8777 }
+                    })
                 })
             }
         }
 
-        const locationInterval = setInterval(updateLocation, 10000)
-        updateLocation()
+        // If ride is confirmed, simulate captain moving towards the pickup location
+        if (ride && ride.status === 'accepted') {
+            const fetchPickupAndSimulate = async () => {
+                try {
+                    const token = localStorage.getItem('captain-token');
+                    const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-coordinates`, {
+                        params: { address: ride.pickup },
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    const pickupCoords = response.data;
+                    if (pickupCoords && pickupCoords.ltd && pickupCoords.lng) {
+                        // Start offset by ~1.2km away
+                        let currentLat = pickupCoords.ltd + 0.01;
+                        let currentLng = pickupCoords.lng + 0.01;
+                        let step = 0;
+                        const totalSteps = 40;
 
-        // return () => clearInterval(locationInterval)
-    }, [])
+                        simulationInterval = setInterval(() => {
+                            if (step >= totalSteps) {
+                                clearInterval(simulationInterval);
+                                return;
+                            }
+                            // Interpolate towards pickup
+                            currentLat = currentLat + (pickupCoords.ltd - currentLat) * 0.12;
+                            currentLng = currentLng + (pickupCoords.lng - currentLng) * 0.12;
 
-    socket.on('new-ride', (data) => {
+                            socket.emit('update-location-captain', {
+                                userId: captain._id,
+                                location: { ltd: currentLat, lng: currentLng }
+                            });
+                            step++;
+                        }, 2000);
+                    }
+                } catch (err) {
+                    console.error('Simulation error:', err);
+                    updateLocation();
+                }
+            };
+            fetchPickupAndSimulate();
+        } else {
+            locationInterval = setInterval(updateLocation, 10000)
+            updateLocation()
+        }
 
-        setRide(data)
-        setRidePopupPanel(true)
+        const handleNewRide = (data) => {
+            setRide(data)
+            setRidePopupPanel(true)
+            // In-app toast
+            addToast(`New ${data.vehicleType?.toUpperCase() || 'ride'} request from ${data.user?.fullname?.firstname || 'a passenger'}!`, 'ride')
+            // Browser push notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('New Ride Request! 🚗', {
+                    body: `${data.pickup?.split(',')[0]} → ${data.destination?.split(',')[0]} • ₹${data.fare}`,
+                    icon: 'https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png'
+                })
+            }
+        }
 
-    })
+        socket.on('new-ride', handleNewRide)
+
+        return () => {
+            if (locationInterval) clearInterval(locationInterval)
+            if (simulationInterval) clearInterval(simulationInterval)
+            socket.off('new-ride', handleNewRide)
+        }
+    }, [captain, ride])
+
 
     async function confirmRide() {
 
@@ -62,13 +138,16 @@ const CaptainHome = () => {
             rideId: ride._id,
             captainId: captain._id,
 
-
         }, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('token')}`
+                Authorization: `Bearer ${localStorage.getItem('captain-token')}`
             }
         })
 
+        // Update ride state with full confirmed data (includes OTP for captain)
+        if (response.data) {
+            setRide(response.data)
+        }
         setRidePopupPanel(false)
         setConfirmRidePopupPanel(true)
 
@@ -101,6 +180,7 @@ const CaptainHome = () => {
 
     return (
         <div className='h-screen'>
+
             <div className='fixed p-6 top-0 flex items-center justify-between w-screen'>
                 <img className='w-16' src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="" />
                 <Link to='/captain-home' className=' h-10 w-10 bg-white flex items-center justify-center rounded-full'>
@@ -108,8 +188,7 @@ const CaptainHome = () => {
                 </Link>
             </div>
             <div className='h-3/5'>
-                <img className='h-full w-full object-cover' src="https://miro.medium.com/v2/resize:fit:1400/0*gwMx05pqII5hbfmX.gif" alt="" />
-
+                <LiveTracking />
             </div>
             <div className='h-2/5 p-6'>
                 <CaptainDetails />

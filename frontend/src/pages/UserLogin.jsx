@@ -4,6 +4,8 @@ import { UserDataContext } from '../context/UserContext'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
+import { useToast } from '../context/ToastContext'
+
 const UserLogin = () => {
   const [ email, setEmail ] = useState('')
   const [ password, setPassword ] = useState('')
@@ -11,8 +13,7 @@ const UserLogin = () => {
 
   const { user, setUser } = useContext(UserDataContext)
   const navigate = useNavigate()
-
-
+  const { addToast } = useToast()
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -22,15 +23,19 @@ const UserLogin = () => {
       password: password
     }
 
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, userData)
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, userData)
 
-    if (response.status === 200) {
-      const data = response.data
-      setUser(data.user)
-      localStorage.setItem('token', data.token)
-      navigate('/home')
+      if (response.status === 200) {
+        const data = response.data
+        setUser(data.user)
+        localStorage.setItem('token', data.token)
+        addToast(`Welcome back, ${data.user.fullname.firstname}! 👋`, 'success')
+        navigate('/home')
+      }
+    } catch (err) {
+      addToast(err.response?.data?.message || 'Invalid email or password', 'error')
     }
-
 
     setEmail('')
     setPassword('')

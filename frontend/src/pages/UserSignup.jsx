@@ -5,6 +5,8 @@ import { UserDataContext } from '../context/UserContext'
 
 
 
+import { useToast } from '../context/ToastContext'
+
 const UserSignup = () => {
   const [ email, setEmail ] = useState('')
   const [ password, setPassword ] = useState('')
@@ -13,13 +15,8 @@ const UserSignup = () => {
   const [ userData, setUserData ] = useState({})
 
   const navigate = useNavigate()
-
-
-
   const { user, setUser } = useContext(UserDataContext)
-
-
-
+  const { addToast } = useToast()
 
   const submitHandler = async (e) => {
     e.preventDefault()
@@ -32,21 +29,24 @@ const UserSignup = () => {
       password: password
     }
 
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser)
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser)
 
-    if (response.status === 201) {
-      const data = response.data
-      setUser(data.user)
-      localStorage.setItem('token', data.token)
-      navigate('/home')
+      if (response.status === 201) {
+        const data = response.data
+        setUser(data.user)
+        localStorage.setItem('token', data.token)
+        addToast(`Account created successfully! Welcome, ${data.user.fullname.firstname}! 🎉`, 'success')
+        navigate('/home')
+      }
+    } catch (err) {
+      addToast(err.response?.data?.errors?.[0]?.msg || err.response?.data?.message || 'Registration failed', 'error')
     }
-
 
     setEmail('')
     setFirstName('')
     setLastName('')
     setPassword('')
-
   }
   return (
     <div>
