@@ -55,8 +55,8 @@ Ensure you have Node.js (v18+) and MongoDB installed locally, or a MongoDB Atlas
 
 ### 2. Clone the Repository
 ```bash
-git clone https://github.com/Sg-2003/HomelyHub.git
-cd HomelyHub
+git clone https://github.com/Sg-2003/UberDemo.git
+cd UberDemo
 ```
 
 ### 3. Backend Setup
