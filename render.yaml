@@ -12,6 +12,6 @@ services:
       - key: JWT_SECRET
         value: uber-production-secret-key-9999
       - key: DB_CONNECT
-        sync: false # You will paste your MongoDB Atlas Connection URI here
+        value: mongodb+srv://sukumar:sukumar123@cluster0.b4pieja.mongodb.net/uberDemo?appName=Cluster0
       - key: GOOGLE_MAPS_API
         value: dummy-google-maps-api-key
