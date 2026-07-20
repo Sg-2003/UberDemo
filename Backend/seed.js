@@ -37,6 +37,8 @@ async function run() {
 
         const testUserEmail = 'user@test.com';
         const testCaptainEmail = 'captain@test.com';
+        const exampleUserEmail = 'user@example.com';
+        const exampleCaptainEmail = 'captain@example.com';
         const rawPassword = 'password123';
         const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
@@ -51,6 +53,18 @@ async function run() {
             console.log(`Created User: ${testUserEmail}`);
         } else {
             console.log(`User ${testUserEmail} already exists`);
+        }
+
+        const existingExampleUser = await userModel.findOne({ email: exampleUserEmail });
+        if (!existingExampleUser) {
+            await userModel.create({
+                fullname: { firstname: 'John', lastname: 'Example' },
+                email: exampleUserEmail,
+                password: hashedPassword
+            });
+            console.log(`Created User: ${exampleUserEmail}`);
+        } else {
+            console.log(`User ${exampleUserEmail} already exists`);
         }
 
         // Seed Captain
@@ -72,12 +86,30 @@ async function run() {
             console.log(`Captain ${testCaptainEmail} already exists`);
         }
 
+        const existingExampleCaptain = await captainModel.findOne({ email: exampleCaptainEmail });
+        if (!existingExampleCaptain) {
+            await captainModel.create({
+                fullname: { firstname: 'Captain', lastname: 'Example' },
+                email: exampleCaptainEmail,
+                password: hashedPassword,
+                vehicle: {
+                    color: 'Black',
+                    plate: 'MH-12-XYZ-9999',
+                    capacity: 4,
+                    vehicleType: 'car'
+                }
+            });
+            console.log(`Created Captain: ${exampleCaptainEmail}`);
+        } else {
+            console.log(`Captain ${exampleCaptainEmail} already exists`);
+        }
+
         console.log('\n======================================');
         console.log('TEST CREDENTIALS REGISTERED SUCCESSFULLY');
         console.log('======================================');
-        console.log(`Passenger Email : ${testUserEmail}`);
-        console.log(`Captain Email   : ${testCaptainEmail}`);
-        console.log(`Password        : ${rawPassword}`);
+        console.log(`Passenger Emails : ${testUserEmail} , ${exampleUserEmail}`);
+        console.log(`Captain Emails   : ${testCaptainEmail} , ${exampleCaptainEmail}`);
+        console.log(`Password         : ${rawPassword}`);
         console.log('======================================\n');
 
         process.exit(0);
