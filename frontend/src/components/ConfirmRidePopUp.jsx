@@ -29,7 +29,7 @@ const ConfirmRidePopUp = (props) => {
             if (response.status === 200) {
                 props.setConfirmRidePopupPanel(false)
                 props.setRidePopupPanel(false)
-                navigate('/captain-riding', { state: { ride: props.ride } })
+                navigate('/captain-riding', { state: { ride: response.data } })
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Invalid OTP. Please try again.')

@@ -18,11 +18,8 @@ module.exports.createRide = async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized' });
         }
         const ride = await rideService.createRide({ user: req.user._id, pickup, destination, vehicleType });
-        res.status(201).json(ride);
 
         const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
-
-
 
         const captainsInRadius = await mapService.getCaptainsInTheRadius(pickupCoordinates.ltd, pickupCoordinates.lng, 2);
 
@@ -45,6 +42,8 @@ module.exports.createRide = async (req, res) => {
                 data: rideWithUser
             })
         })
+
+        res.status(201).json(ride);
 
     } catch (err) {
 

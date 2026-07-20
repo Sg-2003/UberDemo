@@ -35,7 +35,15 @@ const CaptainRiding = () => {
     useEffect(() => {
         if (!captain?._id || !rideData) return;
 
-        socket.emit('join', { userId: captain._id, userType: 'captain' })
+        const handleConnect = () => {
+            socket.emit('join', { userId: captain._id, userType: 'captain' })
+        }
+
+        if (socket.connected) {
+            handleConnect()
+        }
+
+        socket.on('connect', handleConnect)
 
         // Clear any old simulation before starting a new one
         if (simulationRef.current) clearInterval(simulationRef.current)
@@ -90,6 +98,7 @@ const CaptainRiding = () => {
                 clearInterval(simulationRef.current);
                 simulationRef.current = null;
             }
+            socket.off('connect', handleConnect)
         }
     }, [captain?._id, rideData?.pickup, rideData?.destination])  // stable deps only
 

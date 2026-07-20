@@ -45,7 +45,15 @@ const Home = () => {
     useEffect(() => {
         if (!user || !user._id) return;
 
-        socket.emit("join", { userType: "user", userId: user._id })
+        const handleConnect = () => {
+            socket.emit("join", { userType: "user", userId: user._id })
+        }
+
+        if (socket.connected) {
+            handleConnect()
+        }
+
+        socket.on('connect', handleConnect)
 
         const handleRideConfirmed = (ride) => {
             setVehicleFound(false)
@@ -76,6 +84,7 @@ const Home = () => {
         socket.on('ride-started', handleRideStarted)
 
         return () => {
+            socket.off('connect', handleConnect)
             socket.off('ride-confirmed', handleRideConfirmed)
             socket.off('ride-started', handleRideStarted)
         }

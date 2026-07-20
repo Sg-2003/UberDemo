@@ -7,6 +7,7 @@ let io;
 
 function initializeSocket(server) {
     io = socketIo(server, {
+        transports: [ 'polling' ],
         cors: {
             origin: '*',
             methods: [ 'GET', 'POST' ]
@@ -56,8 +57,10 @@ function initializeSocket(server) {
             }
         });
 
-        socket.on('disconnect', () => {
+        socket.on('disconnect', async () => {
             console.log(`Client disconnected: ${socket.id}`);
+            await userModel.findOneAndUpdate({ socketId: socket.id }, { socketId: null });
+            await captainModel.findOneAndUpdate({ socketId: socket.id }, { socketId: null });
         });
     });
 }

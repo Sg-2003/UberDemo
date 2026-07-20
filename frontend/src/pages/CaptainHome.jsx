@@ -35,10 +35,18 @@ const CaptainHome = () => {
     useEffect(() => {
         if (!captain || !captain._id) return;
 
-        socket.emit('join', {
-            userId: captain._id,
-            userType: 'captain'
-        })
+        const handleConnect = () => {
+            socket.emit('join', {
+                userId: captain._id,
+                userType: 'captain'
+            })
+        }
+
+        if (socket.connected) {
+            handleConnect()
+        }
+
+        socket.on('connect', handleConnect)
 
         let locationInterval;
         let simulationInterval;
@@ -126,6 +134,7 @@ const CaptainHome = () => {
         return () => {
             if (locationInterval) clearInterval(locationInterval)
             if (simulationInterval) clearInterval(simulationInterval)
+            socket.off('connect', handleConnect)
             socket.off('new-ride', handleNewRide)
         }
     }, [captain, ride])

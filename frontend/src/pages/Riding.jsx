@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { SocketContext } from '../context/SocketContext'
+import { UserDataContext } from '../context/UserContext'
 import LiveTracking from '../components/LiveTracking'
 import axios from 'axios'
 import { vehicleImages, vehicleLabels } from '../assets/vehicleAssets'
@@ -10,6 +11,7 @@ const Riding = () => {
     const location = useLocation()
     const { ride } = location.state || {}
     const { socket } = useContext(SocketContext)
+    const { user } = useContext(UserDataContext)
     const navigate = useNavigate()
     const { addToast } = useToast()
 
@@ -23,6 +25,24 @@ const Riding = () => {
     const [ loading, setLoading ] = useState(false)
     const [ paid, setPaid ] = useState(false)
     const [ error, setError ] = useState('')
+
+    useEffect(() => {
+        if (!user || !user._id) return;
+
+        const handleConnect = () => {
+            socket.emit("join", { userType: "user", userId: user._id })
+        }
+
+        if (socket.connected) {
+            handleConnect()
+        }
+
+        socket.on('connect', handleConnect)
+
+        return () => {
+            socket.off('connect', handleConnect)
+        }
+    }, [user])
 
     useEffect(() => {
         const handleRideEnded = () => {

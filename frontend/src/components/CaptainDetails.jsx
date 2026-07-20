@@ -22,8 +22,8 @@ const CaptainDetails = () => {
                 <div className='flex items-center justify-start gap-3'>
                     <img className='h-12 w-12 rounded-full object-cover border-2 border-yellow-400' src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdlMd7stpWUCmjpfRjUsQ72xSWikidbgaI1w&s" alt="" />
                     <div>
-                        <h4 className='text-lg font-semibold capitalize'>{captain.fullname.firstname} {captain.fullname.lastname}</h4>
-                        <p className='text-xs text-gray-500 capitalize'>{captain.vehicle?.color} {captain.vehicle?.vehicleType} · {captain.vehicle?.plate}</p>
+                        <h4 className='text-lg font-semibold capitalize'>{captain?.fullname?.firstname} {captain?.fullname?.lastname}</h4>
+                        <p className='text-xs text-gray-500 capitalize'>{captain?.vehicle?.color} {captain?.vehicle?.vehicleType} · {captain?.vehicle?.plate}</p>
                     </div>
                 </div>
                 <div className='text-right'>
@@ -41,12 +41,12 @@ const CaptainDetails = () => {
                 </div>
                 <div className='text-center'>
                     <i className="text-3xl mb-2 font-thin ri-speed-up-line text-orange-500"></i>
-                    <h5 className='text-lg font-semibold'>{captain.vehicle?.capacity}</h5>
+                    <h5 className='text-lg font-semibold'>{captain?.vehicle?.capacity}</h5>
                     <p className='text-xs text-gray-600'>Capacity</p>
                 </div>
                 <div className='text-center'>
                     <i className="text-3xl mb-2 font-thin ri-car-line text-green-500"></i>
-                    <h5 className='text-lg font-semibold capitalize'>{captain.vehicle?.vehicleType}</h5>
+                    <h5 className='text-lg font-semibold capitalize'>{captain?.vehicle?.vehicleType}</h5>
                     <p className='text-xs text-gray-600'>Vehicle Type</p>
                 </div>
             </div>
