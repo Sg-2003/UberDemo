@@ -67,48 +67,90 @@ async function run() {
             console.log(`User ${exampleUserEmail} already exists`);
         }
 
-        // Seed Captain
+        // Seed Captain (Car)
         const existingCaptain = await captainModel.findOne({ email: testCaptainEmail });
         if (!existingCaptain) {
             await captainModel.create({
-                fullname: { firstname: 'Captain', lastname: 'Jack' },
+                fullname: { firstname: 'Captain', lastname: 'Car' },
                 email: testCaptainEmail,
                 password: hashedPassword,
                 vehicle: {
                     color: 'White',
-                    plate: 'MH-12-AB-1234',
+                    plate: 'MH-12-CAR-1111',
                     capacity: 4,
                     vehicleType: 'car'
                 }
             });
-            console.log(`Created Captain: ${testCaptainEmail}`);
+            console.log(`Created Captain (Car): ${testCaptainEmail}`);
         } else {
-            console.log(`Captain ${testCaptainEmail} already exists`);
+            console.log(`Captain (Car) ${testCaptainEmail} already exists`);
         }
 
         const existingExampleCaptain = await captainModel.findOne({ email: exampleCaptainEmail });
         if (!existingExampleCaptain) {
             await captainModel.create({
-                fullname: { firstname: 'Captain', lastname: 'Example' },
+                fullname: { firstname: 'Captain', lastname: 'ExampleCar' },
                 email: exampleCaptainEmail,
                 password: hashedPassword,
                 vehicle: {
                     color: 'Black',
-                    plate: 'MH-12-XYZ-9999',
+                    plate: 'MH-12-CAR-2222',
                     capacity: 4,
                     vehicleType: 'car'
                 }
             });
-            console.log(`Created Captain: ${exampleCaptainEmail}`);
+            console.log(`Created Captain (Car): ${exampleCaptainEmail}`);
         } else {
-            console.log(`Captain ${exampleCaptainEmail} already exists`);
+            console.log(`Captain (Car) ${exampleCaptainEmail} already exists`);
+        }
+
+        // Seed Captain (Auto)
+        const autoCaptainEmail = 'captain-auto@example.com';
+        const existingAutoCaptain = await captainModel.findOne({ email: autoCaptainEmail });
+        if (!existingAutoCaptain) {
+            await captainModel.create({
+                fullname: { firstname: 'Captain', lastname: 'Auto' },
+                email: autoCaptainEmail,
+                password: hashedPassword,
+                vehicle: {
+                    color: 'Yellow',
+                    plate: 'MH-12-AUTO-3333',
+                    capacity: 3,
+                    vehicleType: 'auto'
+                }
+            });
+            console.log(`Created Captain (Auto): ${autoCaptainEmail}`);
+        } else {
+            console.log(`Captain (Auto) ${autoCaptainEmail} already exists`);
+        }
+
+        // Seed Captain (Moto)
+        const motoCaptainEmail = 'captain-moto@example.com';
+        const existingMotoCaptain = await captainModel.findOne({ email: motoCaptainEmail });
+        if (!existingMotoCaptain) {
+            await captainModel.create({
+                fullname: { firstname: 'Captain', lastname: 'Moto' },
+                email: motoCaptainEmail,
+                password: hashedPassword,
+                vehicle: {
+                    color: 'Red',
+                    plate: 'MH-12-MOTO-4444',
+                    capacity: 1,
+                    vehicleType: 'moto'
+                }
+            });
+            console.log(`Created Captain (Moto): ${motoCaptainEmail}`);
+        } else {
+            console.log(`Captain (Moto) ${motoCaptainEmail} already exists`);
         }
 
         console.log('\n======================================');
         console.log('TEST CREDENTIALS REGISTERED SUCCESSFULLY');
         console.log('======================================');
         console.log(`Passenger Emails : ${testUserEmail} , ${exampleUserEmail}`);
-        console.log(`Captain Emails   : ${testCaptainEmail} , ${exampleCaptainEmail}`);
+        console.log(`Captain (Car)    : ${testCaptainEmail} , ${exampleCaptainEmail}`);
+        console.log(`Captain (Auto)   : ${autoCaptainEmail}`);
+        console.log(`Captain (Moto)   : ${motoCaptainEmail}`);
         console.log(`Password         : ${rawPassword}`);
         console.log('======================================\n');
 
