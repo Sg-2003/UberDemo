@@ -9,7 +9,9 @@ function connectToDb() {
         console.warn('DNS setServers failed, using default system resolver:', err.message);
     }
 
-    mongoose.connect(process.env.DB_CONNECT)
+    mongoose.connect(process.env.DB_CONNECT, {
+        serverSelectionTimeoutMS: 5000
+    })
         .then(() => {
             console.log('Connected to DB');
         })
