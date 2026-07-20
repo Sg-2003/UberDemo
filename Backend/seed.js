@@ -1,6 +1,14 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const dotenv = require('dotenv');
+const dns = require('dns');
+
+try {
+    dns.setServers(['8.8.8.8', '8.8.4.4']);
+} catch (err) {
+    console.warn('DNS setServers failed:', err.message);
+}
+
 dotenv.config();
 
 const userSchema = new mongoose.Schema({
@@ -42,7 +50,7 @@ async function run() {
         const rawPassword = 'password123';
         const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
-        // Seed User
+        // Seed User (test)
         const existingUser = await userModel.findOne({ email: testUserEmail });
         if (!existingUser) {
             await userModel.create({
@@ -52,9 +60,12 @@ async function run() {
             });
             console.log(`Created User: ${testUserEmail}`);
         } else {
-            console.log(`User ${testUserEmail} already exists`);
+            existingUser.password = hashedPassword;
+            await existingUser.save();
+            console.log(`Updated password for existing User: ${testUserEmail}`);
         }
 
+        // Seed User (example)
         const existingExampleUser = await userModel.findOne({ email: exampleUserEmail });
         if (!existingExampleUser) {
             await userModel.create({
@@ -64,10 +75,12 @@ async function run() {
             });
             console.log(`Created User: ${exampleUserEmail}`);
         } else {
-            console.log(`User ${exampleUserEmail} already exists`);
+            existingExampleUser.password = hashedPassword;
+            await existingExampleUser.save();
+            console.log(`Updated password for existing User: ${exampleUserEmail}`);
         }
 
-        // Seed Captain (Car)
+        // Seed Captain (Car - test)
         const existingCaptain = await captainModel.findOne({ email: testCaptainEmail });
         if (!existingCaptain) {
             await captainModel.create({
@@ -83,9 +96,18 @@ async function run() {
             });
             console.log(`Created Captain (Car): ${testCaptainEmail}`);
         } else {
-            console.log(`Captain (Car) ${testCaptainEmail} already exists`);
+            existingCaptain.password = hashedPassword;
+            existingCaptain.vehicle = {
+                color: 'White',
+                plate: 'MH-12-CAR-1111',
+                capacity: 4,
+                vehicleType: 'car'
+            };
+            await existingCaptain.save();
+            console.log(`Updated password and vehicle for existing Captain: ${testCaptainEmail}`);
         }
 
+        // Seed Captain (Car - example)
         const existingExampleCaptain = await captainModel.findOne({ email: exampleCaptainEmail });
         if (!existingExampleCaptain) {
             await captainModel.create({
@@ -101,7 +123,15 @@ async function run() {
             });
             console.log(`Created Captain (Car): ${exampleCaptainEmail}`);
         } else {
-            console.log(`Captain (Car) ${exampleCaptainEmail} already exists`);
+            existingExampleCaptain.password = hashedPassword;
+            existingExampleCaptain.vehicle = {
+                color: 'Black',
+                plate: 'MH-12-CAR-2222',
+                capacity: 4,
+                vehicleType: 'car'
+            };
+            await existingExampleCaptain.save();
+            console.log(`Updated password and vehicle for existing Captain: ${exampleCaptainEmail}`);
         }
 
         // Seed Captain (Auto)
@@ -121,7 +151,15 @@ async function run() {
             });
             console.log(`Created Captain (Auto): ${autoCaptainEmail}`);
         } else {
-            console.log(`Captain (Auto) ${autoCaptainEmail} already exists`);
+            existingAutoCaptain.password = hashedPassword;
+            existingAutoCaptain.vehicle = {
+                color: 'Yellow',
+                plate: 'MH-12-AUTO-3333',
+                capacity: 3,
+                vehicleType: 'auto'
+            };
+            await existingAutoCaptain.save();
+            console.log(`Updated password and vehicle for existing Captain (Auto): ${autoCaptainEmail}`);
         }
 
         // Seed Captain (Moto)
@@ -141,7 +179,15 @@ async function run() {
             });
             console.log(`Created Captain (Moto): ${motoCaptainEmail}`);
         } else {
-            console.log(`Captain (Moto) ${motoCaptainEmail} already exists`);
+            existingMotoCaptain.password = hashedPassword;
+            existingMotoCaptain.vehicle = {
+                color: 'Red',
+                plate: 'MH-12-MOTO-4444',
+                capacity: 1,
+                vehicleType: 'moto'
+            };
+            await existingMotoCaptain.save();
+            console.log(`Updated password and vehicle for existing Captain (Moto): ${motoCaptainEmail}`);
         }
 
         console.log('\n======================================');
