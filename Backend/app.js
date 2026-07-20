@@ -26,6 +26,49 @@ app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
+const mongoose = require('mongoose');
+app.get('/db-test', async (req, res) => {
+    const rawUri = process.env.DB_CONNECT || '';
+    let maskedUri = 'undefined';
+    if (rawUri) {
+        maskedUri = rawUri.replace(/:([^:@\/\?]+)@/, ':******@');
+    }
+
+    const state = mongoose.connection.readyState;
+    const states = {
+        0: 'disconnected',
+        1: 'connected',
+        2: 'connecting',
+        3: 'disconnecting'
+    };
+
+    try {
+        if (state === 1) {
+            await mongoose.connection.db.admin().ping();
+            return res.json({
+                status: 'OK',
+                connectionState: states[state],
+                uri: maskedUri,
+                ping: 'success'
+            });
+        } else {
+            return res.json({
+                status: 'ERROR',
+                connectionState: states[state],
+                uri: maskedUri,
+                message: 'Mongoose is not connected. Check Render environment variables.'
+            });
+        }
+    } catch (err) {
+        res.status(500).json({
+            status: 'ERROR',
+            connectionState: states[state],
+            uri: maskedUri,
+            error: err.message
+        });
+    }
+});
+
 app.use('/users', userRoutes);
 app.use('/captains', captainRoutes);
 app.use('/maps', mapsRoutes);
