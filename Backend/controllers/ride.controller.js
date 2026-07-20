@@ -32,8 +32,6 @@ module.exports.createRide = async (req, res) => {
                    (vehicleType === 'motorcycle' && capType === 'moto');
         });
 
-        ride.otp = ""
-
         const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate('user');
 
         matchingCaptains.map(captain => {
@@ -85,7 +83,11 @@ module.exports.confirmRide = async (req, res) => {
             data: ride
         })
 
-        return res.status(200).json(ride);
+        // Delete otp from response sent to captain for security
+        const rideForCaptain = ride.toObject();
+        delete rideForCaptain.otp;
+
+        return res.status(200).json(rideForCaptain);
     } catch (err) {
 
         console.log(err);

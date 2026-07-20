@@ -385,9 +385,6 @@ const LiveTracking = (props) => {
         if (routeCoords.length > 0) {
             allCoords.push(...routeCoords);
         }
-        if (currentPosition && !isNaN(currentPosition.lat) && !isNaN(currentPosition.lng)) {
-            allCoords.push([currentPosition.lat, currentPosition.lng]);
-        }
         if (captainPosition && !isNaN(captainPosition.lat) && !isNaN(captainPosition.lng)) {
             allCoords.push([captainPosition.lat, captainPosition.lng]);
         }
@@ -396,6 +393,11 @@ const LiveTracking = (props) => {
         }
         if (destinationCoords && !isNaN(destinationCoords.lat) && !isNaN(destinationCoords.lng)) {
             allCoords.push([destinationCoords.lat, destinationCoords.lng]);
+        }
+        
+        // Fallback to currentPosition only if no other coordinates exist
+        if (allCoords.length === 0 && currentPosition && !isNaN(currentPosition.lat) && !isNaN(currentPosition.lng)) {
+            allCoords.push([currentPosition.lat, currentPosition.lng]);
         }
 
         if (allCoords.length > 0) {
@@ -455,9 +457,6 @@ const LiveTracking = (props) => {
             // Fit map bounds once
             if (!hasFitBoundsRef.current) {
                 const allCoords = [...routeCoords];
-                if (currentPosition && !isNaN(currentPosition.lat) && !isNaN(currentPosition.lng)) {
-                    allCoords.push([currentPosition.lat, currentPosition.lng]);
-                }
                 if (captainPosition && !isNaN(captainPosition.lat) && !isNaN(captainPosition.lng)) {
                     allCoords.push([captainPosition.lat, captainPosition.lng]);
                 }
@@ -474,17 +473,19 @@ const LiveTracking = (props) => {
             // Fit default bounds once
             if (!hasFitBoundsRef.current) {
                 const boundsCoords = [];
-                if (currentPosition && !isNaN(currentPosition.lat) && !isNaN(currentPosition.lng)) {
-                    boundsCoords.push([currentPosition.lat, currentPosition.lng]);
-                }
-                if (captainPosition && !isNaN(captainPosition.lat) && !isNaN(captainPosition.lng)) {
-                    boundsCoords.push([captainPosition.lat, captainPosition.lng]);
-                }
                 if (pickupCoords && !isNaN(pickupCoords.lat) && !isNaN(pickupCoords.lng)) {
                     boundsCoords.push([pickupCoords.lat, pickupCoords.lng]);
                 }
                 if (destinationCoords && !isNaN(destinationCoords.lat) && !isNaN(destinationCoords.lng)) {
                     boundsCoords.push([destinationCoords.lat, destinationCoords.lng]);
+                }
+                if (captainPosition && !isNaN(captainPosition.lat) && !isNaN(captainPosition.lng)) {
+                    boundsCoords.push([captainPosition.lat, captainPosition.lng]);
+                }
+                
+                // Fallback to currentPosition only if no ride coordinates are set
+                if (boundsCoords.length === 0 && currentPosition && !isNaN(currentPosition.lat) && !isNaN(currentPosition.lng)) {
+                    boundsCoords.push([currentPosition.lat, currentPosition.lng]);
                 }
                 
                 if (boundsCoords.length > 0) {
