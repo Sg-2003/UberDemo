@@ -49,8 +49,15 @@ function initializeSocket(server) {
                 status: { $in: [ 'accepted', 'ongoing' ] }
             }).populate('user');
 
-            if (ride && ride.user && ride.user.socketId) {
-                io.to(ride.user.socketId).emit('captain-location-updated', {
+            if (ride) {
+                if (ride.user && ride.user.socketId) {
+                    io.to(ride.user.socketId).emit('captain-location-updated', {
+                        ltd: location.ltd,
+                        lng: location.lng
+                    });
+                }
+                // Also send back to the captain's socket to update their local map in real time
+                socket.emit('captain-location-updated', {
                     ltd: location.ltd,
                     lng: location.lng
                 });
